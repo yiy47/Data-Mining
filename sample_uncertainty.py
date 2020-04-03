@@ -1,23 +1,9 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import os
 import pandas as pd
-
-
-# In[2]:
-
 
 # LOAD MOBILE DATA
 os.chdir('/home/wxm/Desktop/2019_CANGZHOU/result/processed dataset/')
 cangzhou_coded = pd.read_csv('cangzhou_coded.csv')
-
-
-# In[3]:
-
 
 cangzhou_df = cangzhou_coded
 cangzhou_df = cangzhou_df.drop(cangzhou_df.columns[[0]], axis=1) 
@@ -25,9 +11,6 @@ cangzhou_df = cangzhou_df[cangzhou_df['month']==1]
 cangzhou_df = cangzhou_df[cangzhou_df['pm25'].notnull()]
 cangzhou_df['date'] = pd.to_datetime(cangzhou_df[['year', 'month', 'day']])
 cangzhou_df['date_hour'] = pd.to_datetime(cangzhou_df.date) + pd.to_timedelta(cangzhou_df.hour, unit='h')
-
-
-# In[4]:
 
 
 #Take the medians by cell and hour (if they weren't already)
@@ -42,19 +25,11 @@ df_expected = df_1hr.groupby(['geohash_coded'])['conc_1hr'].agg([('conc_expected
 df_filtered = df_expected[df_expected['count']>=100]
 df_merge = df_1hr.merge(df_filtered,on=['geohash_coded'])
 
-
-# In[5]:
-
-
 #Define the percentiles and the values of N
 pct_list = range(1,100) #every 1 percentile
 percentile_str_list = ['n_sub']+["p{0:02}t".format(pct) for pct in pct_list]
 n_sub_list = [5,10,15,20,25,30,35]
 percentile_list = []
-
-
-# In[6]:
-
 
 #Bias function
 def calc_bias(df,n):
@@ -67,10 +42,6 @@ def calc_bias(df,n):
     df_temp['bias'] = (df_temp['conc_expected']-df_temp['conc_1hr'])/df_temp['conc_1hr']*100
     return df_temp
 
-
-# In[7]:
-
-
 #Loop over N values
 for i,value in enumerate(n_sub_list):
     print(value)
@@ -82,14 +53,10 @@ for i,value in enumerate(n_sub_list):
     percentile_list.append([value]+[df_bias.bias.quantile(pct/100) for pct in pct_list])
 
 
-# In[8]:
-
 
 percentile_df = pd.DataFrame(percentile_list,columns=percentile_str_list)
 percentile_df.to_excel ('/home/wxm/Desktop/2019_CANGZHOU/code/UNCERTAINTY ANALYSIS/result/sampleuncertainty_2019Jan.xlsx', index =False, header=True)
 
-
-# In[ ]:
 
 
 
